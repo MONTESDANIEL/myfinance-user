@@ -2,6 +2,10 @@ package com.myfinance.backend.users.entities;
 
 import java.sql.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,7 +16,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users") // Nombre de la tabla
 @Data
 public class User {
 
@@ -28,11 +32,10 @@ public class User {
     private String email;
 
     @NotNull(message = "El número de teléfono es obligatorio")
-    private Long phone_number;
+    @Column(name = "phone_number")
+    private Long phoneNumber;
 
     @NotNull(message = "La fecha de nacimiento es obligatoria")
-    private Date birth_date;
-    
+    @Column(name = "birth_date")
+    private Date birthDate;
 }
-
-

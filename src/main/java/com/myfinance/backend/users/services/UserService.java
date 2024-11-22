@@ -1,4 +1,4 @@
-package com.myfinance.backend.users.service;
+package com.myfinance.backend.users.services;
 
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,13 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public void save(User user){
+    public User save(User user){
         userRepository.save(user);
+        return user;
     }
+    
+    public void delete (Long id){
+        userRepository.deleteById(id);
+    }
+
 }
