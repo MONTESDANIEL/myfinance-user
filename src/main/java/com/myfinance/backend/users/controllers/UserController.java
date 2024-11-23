@@ -1,73 +1,80 @@
 package com.myfinance.backend.users.controllers;
 
-import com.myfinance.backend.users.entities.User;
+import com.myfinance.backend.users.entities.security.ChangePasswordRequest;
+import com.myfinance.backend.users.entities.user.User;
 import com.myfinance.backend.users.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users") // Incorporación de versionado
+@RequestMapping("/users")
 @RequiredArgsConstructor
-public class UserController { // Nombre en singular
+public class UserController {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
 
-    @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        logger.info("Solicitud para obtener todos los usuarios");
-        List<User> users = userService.findAll();
-        return ResponseEntity.ok(users);
+    // USUARIO AUTENTICADO (NO FUNCIONA AÚN)
+
+    // Obtener perfil del usuario autenticado
+    @GetMapping("/profile")
+    public ResponseEntity<User> getUserProfile(@AuthenticationPrincipal User authenticatedUser) {
+        return userService.findById(authenticatedUser.getId())
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // Editar perfil del usuario autenticado
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateUserProfile(@AuthenticationPrincipal User authenticatedUser,
+            @Valid @RequestBody User user, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.badRequest().body(userService.extractErrors(result));
+        }
+        return userService.updateUser(authenticatedUser.getId(), user);
+    }
+
+    // Cambiar la contraseña del usuario autenticado
+    @PutMapping("/password")
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal User authenticatedUser,
+            @RequestBody ChangePasswordRequest changePasswordRequest) {
+
+        return userService.changePassword(authenticatedUser,
+                changePasswordRequest.getCurrentPassword(),
+                changePasswordRequest.getNewPassword(),
+                changePasswordRequest.getConfirmPassword());
+    }
+
+    // Eliminar usuario autenticado
+    @DeleteMapping("/profile")
+    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal User authenticatedUser) {
+        return userService.deleteUser(authenticatedUser.getId());
+    }
+
+    // ADMINISTRADOR
+
+    // Solicitar un usuario por id
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        logger.info("Solicitud para obtener usuario con id {}", id);
         return userService.findById(id)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> {
-                    logger.warn("Usuario con id {} no encontrado", id);
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-                });
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
-        logger.info("Solicitud para crear un nuevo usuario");
-        User savedUser = userService.save(user);
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody User user) {
-        logger.info("Solicitud para actualizar usuario con id {}", id);
-        return userService.findById(id).map(existingUser -> {
-            user.setId(id); // Asignar el ID del usuario existente
-            User updatedUser = userService.save(user);
-            return ResponseEntity.ok(updatedUser);
-        }).orElseGet(() -> {
-            logger.warn("Usuario con id {} no encontrado para actualizar", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        });
-    }
-
+    // Eliminar usuario por id
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        logger.info("Solicitud para eliminar usuario con id {}", id);
-        return userService.findById(id).map(user -> {
-            userService.delete(id);
-            logger.info("Usuario con id {} eliminado exitosamente", id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }).orElseGet(() -> {
-            logger.warn("Usuario con id {} no encontrado para eliminar", id);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        });
+    public ResponseEntity<?> deleteUserById(@PathVariable Long id) {
+        return userService.deleteUser(id);
+    }
+
+    // Solicitar todos los usuarios
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userService.findAll());
     }
 }
