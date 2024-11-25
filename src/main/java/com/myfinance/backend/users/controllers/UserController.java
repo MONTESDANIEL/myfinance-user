@@ -1,10 +1,11 @@
 package com.myfinance.backend.users.controllers;
 
 import com.myfinance.backend.users.entities.security.ChangePasswordRequest;
-import com.myfinance.backend.users.entities.user.User;
+import com.myfinance.backend.users.entities.user.AppUser;
 import com.myfinance.backend.users.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
@@ -23,7 +24,7 @@ public class UserController {
 
     // Obtener perfil del usuario autenticado
     @GetMapping("/profile")
-    public ResponseEntity<User> getUserProfile(@AuthenticationPrincipal User authenticatedUser) {
+    public ResponseEntity<AppUser> getUserProfile(@AuthenticationPrincipal AppUser authenticatedUser) {
         return userService.findById(authenticatedUser.getId())
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -31,8 +32,8 @@ public class UserController {
 
     // Editar perfil del usuario autenticado
     @PutMapping("/profile")
-    public ResponseEntity<?> updateUserProfile(@AuthenticationPrincipal User authenticatedUser,
-            @Valid @RequestBody User user, BindingResult result) {
+    public ResponseEntity<?> updateUserProfile(@AuthenticationPrincipal AppUser authenticatedUser,
+            @Valid @RequestBody AppUser user, BindingResult result) {
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(userService.extractErrors(result));
         }
@@ -41,7 +42,7 @@ public class UserController {
 
     // Cambiar la contraseña del usuario autenticado
     @PutMapping("/password")
-    public ResponseEntity<?> changePassword(@AuthenticationPrincipal User authenticatedUser,
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal AppUser authenticatedUser,
             @RequestBody ChangePasswordRequest changePasswordRequest) {
 
         return userService.changePassword(authenticatedUser,
@@ -52,7 +53,7 @@ public class UserController {
 
     // Eliminar usuario autenticado
     @DeleteMapping("/profile")
-    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal User authenticatedUser) {
+    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal AppUser authenticatedUser) {
         return userService.deleteUser(authenticatedUser.getId());
     }
 
@@ -60,7 +61,7 @@ public class UserController {
 
     // Solicitar un usuario por id
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<AppUser> getUserById(@PathVariable Long id) {
         return userService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -74,7 +75,7 @@ public class UserController {
 
     // Solicitar todos los usuarios
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<AppUser>> getAllUsers() {
         return ResponseEntity.ok(userService.findAll());
     }
 }

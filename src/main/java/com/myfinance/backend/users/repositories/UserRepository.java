@@ -4,8 +4,8 @@ import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
 
-import com.myfinance.backend.users.entities.user.User;
+import com.myfinance.backend.users.entities.user.AppUser;
 
-public interface UserRepository extends CrudRepository<User, Long> {
-    Optional<User> findByEmail(String email);
+public interface UserRepository extends CrudRepository<AppUser, Long> {
+    Optional<AppUser> findByEmail(String email);
 }

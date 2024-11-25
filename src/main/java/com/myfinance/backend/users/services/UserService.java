@@ -1,6 +1,6 @@
 package com.myfinance.backend.users.services;
 
-import com.myfinance.backend.users.entities.user.User;
+import com.myfinance.backend.users.entities.user.AppUser;
 import com.myfinance.backend.users.repositories.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -24,22 +24,22 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<User> findAll() {
-        return (List<User>) userRepository.findAll();
+    public List<AppUser> findAll() {
+        return (List<AppUser>) userRepository.findAll();
     }
 
-    public Optional<User> findById(Long id) {
+    public Optional<AppUser> findById(Long id) {
         return userRepository.findById(id);
     }
 
-    public ResponseEntity<?> updateUser(Long userId, User user) {
+    public ResponseEntity<?> updateUser(Long userId, AppUser user) {
         // Verificar si el usuario existe
-        Optional<User> existingUser = userRepository.findById(userId);
+        Optional<AppUser> existingUser = userRepository.findById(userId);
         if (existingUser.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        User updatedUser = existingUser.get();
+        AppUser updatedUser = existingUser.get();
         updatedUser.setEmail(user.getEmail());
         updatedUser.setName(user.getName());
         updatedUser.setPhoneNumber(user.getPhoneNumber());
@@ -53,7 +53,7 @@ public class UserService {
     }
 
     public ResponseEntity<Void> deleteUser(Long id) {
-        Optional<User> existingUser = userRepository.findById(id);
+        Optional<AppUser> existingUser = userRepository.findById(id);
         if (existingUser.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -62,7 +62,7 @@ public class UserService {
         return ResponseEntity.noContent().build();
     }
 
-    public ResponseEntity<?> changePassword(User authenticatedUser, String currentPassword, String newPassword,
+    public ResponseEntity<?> changePassword(AppUser authenticatedUser, String currentPassword, String newPassword,
             String confirmPassword) {
         // Verificar si la contraseña actual es correcta
         if (!passwordEncoder.matches(currentPassword, authenticatedUser.getPassword())) {
