@@ -1,5 +1,6 @@
 package com.myfinance.backend.users.services;
 
+import com.myfinance.backend.users.entities.security.AppUserDetails;
 import com.myfinance.backend.users.entities.security.LoginRequest;
 import com.myfinance.backend.users.entities.security.PasswordRecovery;
 import com.myfinance.backend.users.entities.security.RegisterRequest;
@@ -40,13 +41,15 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Contraseña incorrecta");
         }
 
-        // Autentica al usuario manualmente y almacena el contexto de seguridad
-        // (opcional)
+        // Crea el objeto AppUserDetails
+        AppUserDetails userDetails = new AppUserDetails(user);
+
+        // Autentica al usuario manualmente
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                user, null, user.getAuthorities());
+                userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
-        log.info("Contexto del login: " + SecurityContextHolder.getContext().getAuthentication());
+        log.info("Contexto del login: {}", SecurityContextHolder.getContext().getAuthentication());
 
         // Genera el token JWT
         String jwtToken = jwtTokenProvider.createToken(user.getEmail());

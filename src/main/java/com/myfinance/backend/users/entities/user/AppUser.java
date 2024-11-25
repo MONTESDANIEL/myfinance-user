@@ -1,19 +1,15 @@
 package com.myfinance.backend.users.entities.user;
 
 import java.sql.Date;
-import java.util.Collection;
-import java.util.Collections;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table(name = "users")
 @Data
-public class AppUser implements UserDetails {
+public class AppUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,36 +36,4 @@ public class AppUser implements UserDetails {
 
     @NotBlank(message = "La contraseña es obligatoria")
     private String password;
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Si trabajas con roles, puedes devolver una lista de ellos. Aquí se retorna
-        // vacío.
-        return Collections.emptyList();
-    }
-
-    @Override
-    public String getUsername() {
-        return this.email; // Usaremos el correo como nombre de usuario
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true; // Personalízalo si usas lógica para expiración de cuentas
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true; // Personalízalo si usas lógica para bloqueo de cuentas
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true; // Personalízalo si usas lógica para expiración de credenciales
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true; // Personalízalo si controlas usuarios inactivos
-    }
 }
