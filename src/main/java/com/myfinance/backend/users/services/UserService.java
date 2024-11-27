@@ -2,7 +2,9 @@ package com.myfinance.backend.users.services;
 
 import com.myfinance.backend.users.entities.user.AppUser;
 import com.myfinance.backend.users.repositories.UserRepository;
-import org.springframework.dao.DataIntegrityViolationException;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,42 +16,27 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    public void updateUser(AppUser user, Long id) {
+        // Verifica si el usuario existe en la base de datos
+        Optional<AppUser> existingUserOptional = userRepository.findById(id);
 
-    public List<AppUser> findAll() {
-        return (List<AppUser>) userRepository.findAll();
-    }
+        // Si el usuario existe, actualiza los campos necesarios
+        AppUser existingUser = existingUserOptional.get();
 
-    public Optional<AppUser> findById(Long id) {
-        return userRepository.findById(id);
-    }
+        // Aquí puedes decidir qué campos quieres actualizar. Ejemplo:
+        existingUser.setName(user.getName());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setPhoneNumber(user.getPhoneNumber());
+        // Puedes añadir más campos según sea necesario
 
-    public ResponseEntity<?> updateUser(Long userId, AppUser user) {
-        // Verificar si el usuario existe
-        Optional<AppUser> existingUser = userRepository.findById(userId);
-        if (existingUser.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        AppUser updatedUser = existingUser.get();
-        updatedUser.setEmail(user.getEmail());
-        updatedUser.setName(user.getName());
-        updatedUser.setPhoneNumber(user.getPhoneNumber());
-
-        try {
-            updatedUser = userRepository.save(updatedUser);
-            return ResponseEntity.ok(updatedUser);
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(409).body("El correo electrónico ya está en uso. Por favor, usa otro.");
-        }
+        // Guarda los cambios en la base de datos
+        userRepository.save(existingUser);
     }
 
     public ResponseEntity<Void> deleteUser(Long id) {
@@ -96,4 +83,5 @@ public class UserService {
                 })
                 .collect(Collectors.toList());
     }
+
 }

@@ -15,9 +15,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.springframework.http.HttpStatus;
 
 @Service
@@ -27,8 +24,6 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     public String login(LoginRequest loginRequest) {
         // Busca al usuario por correo electrónico
@@ -48,8 +43,6 @@ public class AuthService {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
-        log.info("Contexto del login: {}", SecurityContextHolder.getContext().getAuthentication());
 
         // Genera el token JWT
         String jwtToken = jwtTokenProvider.createToken(user.getEmail());

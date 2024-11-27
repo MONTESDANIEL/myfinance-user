@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class JwtTokenProvider {
@@ -15,6 +17,9 @@ public class JwtTokenProvider {
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256); // Genera una clave segura
                                                                                      // automáticamente
     private final long validityInMilliseconds = 5 * 60 * 60 * 1000; // 5 horas en milisegundos
+
+    // Conjunto para almacenar tokens revocados
+    private static final Set<String> revokedTokens = new HashSet<>();
 
     /**
      * Genera un token JWT con un tiempo de validez de 5 horas.
@@ -37,7 +42,7 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Valida si el token es correcto y no está expirado.
+     * Valida si el token es correcto, no está expirado y no está revocado.
      *
      * @param token
      *            Token a validar
@@ -45,6 +50,12 @@ public class JwtTokenProvider {
      */
     public boolean validateToken(String token) {
         try {
+            // Verificar si el token está revocado
+            if (revokedTokens.contains(token)) {
+                return false; // El token está revocado
+            }
+
+            // Validar el token
             Jwts.parserBuilder()
                     .setSigningKey(secretKey)
                     .build()
@@ -69,5 +80,15 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    /**
+     * Revoca un token, es decir, lo agrega a la lista de tokens revocados.
+     *
+     * @param token
+     *            El token que deseas revocar
+     */
+    public void revokeToken(String token) {
+        revokedTokens.add(token);
     }
 }

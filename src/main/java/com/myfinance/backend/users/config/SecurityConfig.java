@@ -54,7 +54,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para pruebas
                 .authorizeHttpRequests(authorize -> authorize
                         // Permitir acceso a las rutas de autenticación sin necesidad de token
-                        .requestMatchers("/api/auth/**").permitAll() // Permitir acceso al login y registro
+                        .requestMatchers("/api/auth/**", "/users/*").permitAll() // Permitir acceso al login y registro
                         .anyRequest().authenticated() // Proteger todas las demás rutas
                 )
                 .logout(logout -> logout

@@ -1,17 +1,19 @@
 package com.myfinance.backend.users.controllers;
 
+import com.myfinance.backend.users.entities.security.AppUserDetails;
 import com.myfinance.backend.users.entities.security.ChangePasswordRequest;
 import com.myfinance.backend.users.entities.user.AppUser;
 import com.myfinance.backend.users.services.UserService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -20,62 +22,73 @@ public class UserController {
 
     private final UserService userService;
 
-    // USUARIO AUTENTICADO (NO FUNCIONA AÚN)
-
-    // Obtener perfil del usuario autenticado
-    @GetMapping("/profile")
-    public ResponseEntity<AppUser> getUserProfile(@AuthenticationPrincipal AppUser authenticatedUser) {
-        return userService.findById(authenticatedUser.getId())
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // Editar perfil del usuario autenticado
-    @PutMapping("/profile")
-    public ResponseEntity<?> updateUserProfile(@AuthenticationPrincipal AppUser authenticatedUser,
-            @Valid @RequestBody AppUser user, BindingResult result) {
-        if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body(userService.extractErrors(result));
+    @GetMapping("/view")
+    public ResponseEntity<?> getCurrentUser() {
+        try {
+            AppUser appUser = getAuthenticatedAppUser();
+            return ResponseEntity.ok(appUser);
+        } catch (UnauthorizedAccessException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
         }
-        return userService.updateUser(authenticatedUser.getId(), user);
     }
 
-    // Cambiar la contraseña del usuario autenticado
+    @PutMapping("/update")
+    public ResponseEntity<?> updateUser(@RequestBody AppUser user) {
+        try {
+            AppUser appUser = getAuthenticatedAppUser();
+            userService.updateUser(user, appUser.getId());
+            return ResponseEntity.ok(Map.of("message", "Usuario actualizado exitosamente"));
+        } catch (AccessDeniedException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", ex.getMessage()));
+        } catch (UnauthorizedAccessException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Ha ocurrido un error inesperado", "details", ex.getMessage()));
+        }
+    }
+
     @PutMapping("/password")
-    public ResponseEntity<?> changePassword(@AuthenticationPrincipal AppUser authenticatedUser,
-            @RequestBody ChangePasswordRequest changePasswordRequest) {
-
-        return userService.changePassword(authenticatedUser,
-                changePasswordRequest.getCurrentPassword(),
-                changePasswordRequest.getNewPassword(),
-                changePasswordRequest.getConfirmPassword());
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
+        try {
+            AppUser appUser = getAuthenticatedAppUser();
+            return userService.changePassword(
+                    appUser,
+                    changePasswordRequest.getCurrentPassword(),
+                    changePasswordRequest.getNewPassword(),
+                    changePasswordRequest.getConfirmPassword());
+        } catch (UnauthorizedAccessException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+        }
     }
 
-    // Eliminar usuario autenticado
-    @DeleteMapping("/profile")
-    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal AppUser authenticatedUser) {
-        return userService.deleteUser(authenticatedUser.getId());
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteUser() {
+        try {
+            AppUser appUser = getAuthenticatedAppUser();
+            return userService.deleteUser(appUser.getId());
+        } catch (UnauthorizedAccessException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+        }
     }
 
-    // ADMINISTRADOR
+    private AppUser getAuthenticatedAppUser() throws UnauthorizedAccessException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-    // Solicitar un usuario por id
-    @GetMapping("/{id}")
-    public ResponseEntity<AppUser> getUserById(@PathVariable Long id) {
-        return userService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        // Verifica si el usuario está autenticado y si es de tipo AppUserDetails
+        if (authentication == null || !authentication.isAuthenticated() ||
+                !(authentication.getPrincipal() instanceof AppUserDetails)) {
+            throw new UnauthorizedAccessException("No estás autenticado");
+        }
+
+        AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+        return userDetails.getAppUser();
     }
 
-    // Eliminar usuario por id
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUserById(@PathVariable Long id) {
-        return userService.deleteUser(id);
-    }
-
-    // Solicitar todos los usuarios
-    @GetMapping
-    public ResponseEntity<List<AppUser>> getAllUsers() {
-        return ResponseEntity.ok(userService.findAll());
+    // Excepción personalizada para manejo de errores de autenticación
+    public static class UnauthorizedAccessException extends Exception {
+        public UnauthorizedAccessException(String message) {
+            super(message);
+        }
     }
 }
