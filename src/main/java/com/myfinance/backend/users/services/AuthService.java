@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -70,6 +71,24 @@ public class AuthService {
 
     public boolean recoverPassword(PasswordRecovery recoveryRequest) {
         return true;
+    }
+
+    public ResponseEntity<?> changePassword(AppUser user, String password, String confirmPassword) {
+        // Validar que la nueva contraseña tenga una longitud adecuada
+        if (password.length() < 6) {
+            return ResponseEntity.status(400).body("La nueva contraseña debe tener al menos 6 caracteres.");
+        }
+
+        // Verificar que la nueva contraseña y la confirmación coinciden
+        if (!password.equals(confirmPassword)) {
+            return ResponseEntity.status(400).body("Las contraseñas no coinciden.");
+        }
+
+        // Actualizar la contraseña
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Contraseña actualizada exitosamente.");
     }
 
     public void logout() {

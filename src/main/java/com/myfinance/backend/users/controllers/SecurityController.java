@@ -2,12 +2,20 @@ package com.myfinance.backend.users.controllers;
 
 import com.myfinance.backend.users.entities.security.ApiResponse;
 import com.myfinance.backend.users.entities.security.LoginRequest;
-import com.myfinance.backend.users.entities.security.PasswordRecovery;
 import com.myfinance.backend.users.entities.security.RegisterRequest;
+import com.myfinance.backend.users.entities.user.AppUser;
+import com.myfinance.backend.users.repositories.UserRepository;
 import com.myfinance.backend.users.services.AuthService;
 import com.myfinance.backend.users.services.JwtTokenProvider;
 
+import jakarta.mail.MessagingException;
+
+import com.myfinance.backend.users.services.EmailService;
+
 import lombok.RequiredArgsConstructor;
+
+import java.io.IOException;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +31,11 @@ public class SecurityController {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private EmailService emailService;
+
+    private final UserRepository userRepository;
 
     // Login: Recibe la data en json y devuelve un token
     @PostMapping("/login")
@@ -43,12 +56,38 @@ public class SecurityController {
 
     // Envia un correo de recuperación de contraseña al correo si existe en la base
     @PostMapping("/password-recovery")
-    public ResponseEntity<ApiResponse> recoverPassword(@RequestBody PasswordRecovery recoveryRequest) {
-        boolean success = authService.recoverPassword(recoveryRequest);
-        if (success) {
-            return ResponseEntity.ok(new ApiResponse("Enlace de recuperación enviado"));
+    public String recoverPassword(@RequestParam String email) throws MessagingException, IOException {
+        Optional<AppUser> user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("Usuario no encontrado");
         }
-        return ResponseEntity.badRequest().body(new ApiResponse("Error en el proceso de recuperación"));
+
+        // Generar el token de recuperación
+        String token = jwtTokenProvider.createRecoveryToken(email);
+
+        // Enviar el correo
+        emailService.sendRecoveryEmail(email, token);
+
+        return "Correo de recuperación enviado";
+    }
+
+    @PostMapping("/reset-password")
+    public String resetPassword(@RequestParam String token, @RequestParam String newPassword,
+            @RequestParam String confirmPassword) {
+        // Validar el token de recuperación
+        if (!jwtTokenProvider.validateRecoveryToken(token)) {
+            throw new RuntimeException("Token inválido o expirado");
+        }
+
+        // Obtener el email del token
+        String email = jwtTokenProvider.getUsernameFromToken(token);
+
+        AppUser user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        authService.changePassword(user, newPassword, confirmPassword);
+
+        return "Contraseña actualizada exitosamente";
     }
 
     // Salir y borrar o inhabilitar token de acceso
