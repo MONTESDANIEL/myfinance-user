@@ -12,7 +12,7 @@ import lombok.Data;
 public class AppUser {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @NotNull(message = "El número de identificación es obligatorio")
     private Long id;
 
     @NotBlank(message = "El nombre es obligatorio y no puede estar vacío")

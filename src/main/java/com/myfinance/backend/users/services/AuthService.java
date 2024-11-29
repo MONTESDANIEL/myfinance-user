@@ -3,7 +3,6 @@ package com.myfinance.backend.users.services;
 import com.myfinance.backend.users.entities.security.AppUserDetails;
 import com.myfinance.backend.users.entities.security.LoginRequest;
 import com.myfinance.backend.users.entities.security.PasswordRecovery;
-import com.myfinance.backend.users.entities.security.RegisterRequest;
 import com.myfinance.backend.users.entities.user.AppUser;
 import com.myfinance.backend.users.repositories.UserRepository;
 
@@ -27,6 +26,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
 
     public String login(LoginRequest loginRequest) {
+
         // Busca al usuario por correo electrónico
         AppUser user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(
@@ -52,18 +52,19 @@ public class AuthService {
         return jwtToken;
     }
 
-    public boolean register(RegisterRequest registerRequest) {
-        if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
+    public boolean register(AppUser appUser) {
+        if (userRepository.findByEmail(appUser.getEmail()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El correo electrónico ya está registrado");
         }
 
         AppUser user = new AppUser();
-        user.setName(registerRequest.getName());
-        user.setEmail(registerRequest.getEmail());
-        user.setPhoneNumber(registerRequest.getPhoneNumber());
-        user.setBirthDate(registerRequest.getBirthDate());
+        user.setId(appUser.getId());
+        user.setName(appUser.getName());
+        user.setEmail(appUser.getEmail());
+        user.setPhoneNumber(appUser.getPhoneNumber());
+        user.setBirthDate(appUser.getBirthDate());
 
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setPassword(passwordEncoder.encode(appUser.getPassword()));
 
         userRepository.save(user);
         return true;
@@ -73,7 +74,7 @@ public class AuthService {
         return true;
     }
 
-    public ResponseEntity<?> changePassword(AppUser user, String password, String confirmPassword) {
+    public ResponseEntity<?> resetPassword(AppUser user, String password, String confirmPassword) {
         // Validar que la nueva contraseña tenga una longitud adecuada
         if (password.length() < 6) {
             return ResponseEntity.status(400).body("La nueva contraseña debe tener al menos 6 caracteres.");

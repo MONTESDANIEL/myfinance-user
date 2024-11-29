@@ -14,15 +14,9 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 public class EmailService {
-
-    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     @Autowired
     private JavaMailSender mailSender;
@@ -36,7 +30,7 @@ public class EmailService {
     public void sendRecoveryEmail(String toEmail, String token) throws MessagingException, IOException {
 
         // URL dinámica
-        String recoveryUrl = "https://mi-aplicacion.com/reset-password?token=" + token;
+        String recoveryUrl = "http://192.168.1.5:5173";
 
         // Cargar plantilla HTML
         Resource resource = resourceLoader.getResource("classpath:templates/recovery-email.html");
@@ -56,6 +50,12 @@ public class EmailService {
         helper.setTo(toEmail);
         helper.setSubject("Recuperación de contraseña");
         helper.setText(content, true); // Establecer el contenido con HTML
+
+        // Agregar íconos como adjuntos en línea
+        helper.addInline("logoImage", resourceLoader.getResource("classpath:templates/LogoVerde.png"));
+        helper.addInline("githubIcon", resourceLoader.getResource("classpath:templates/github.png"));
+        helper.addInline("linkedinIcon", resourceLoader.getResource("classpath:templates/linkedin.png"));
+        helper.addInline("whatsappIcon", resourceLoader.getResource("classpath:templates/whatsapp.png"));
 
         // Enviar el correo
         mailSender.send(mimeMessage);

@@ -2,7 +2,6 @@ package com.myfinance.backend.users.controllers;
 
 import com.myfinance.backend.users.entities.security.ApiResponse;
 import com.myfinance.backend.users.entities.security.LoginRequest;
-import com.myfinance.backend.users.entities.security.RegisterRequest;
 import com.myfinance.backend.users.entities.user.AppUser;
 import com.myfinance.backend.users.repositories.UserRepository;
 import com.myfinance.backend.users.services.AuthService;
@@ -25,8 +24,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-public class SecurityController {
+public class AuthController {
 
+    @Autowired
     private final AuthService authService;
 
     @Autowired
@@ -46,8 +46,8 @@ public class SecurityController {
 
     // Registro: Recibe los datos del nuevo usuario y lo crea
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse> register(@RequestBody RegisterRequest registerRequest) {
-        boolean success = authService.register(registerRequest);
+    public ResponseEntity<ApiResponse> register(@RequestBody AppUser appUser) {
+        boolean success = authService.register(appUser);
         if (success) {
             return ResponseEntity.ok(new ApiResponse("Registro exitoso"));
         }
@@ -55,20 +55,24 @@ public class SecurityController {
     }
 
     // Envia un correo de recuperación de contraseña al correo si existe en la base
-    @PostMapping("/password-recovery")
+    @GetMapping("/password-recovery")
     public String recoverPassword(@RequestParam String email) throws MessagingException, IOException {
         Optional<AppUser> user = userRepository.findByEmail(email);
-        if (user == null) {
+        if (user.isEmpty()) {
             throw new RuntimeException("Usuario no encontrado");
         }
 
         // Generar el token de recuperación
         String token = jwtTokenProvider.createRecoveryToken(email);
 
-        // Enviar el correo
-        emailService.sendRecoveryEmail(email, token);
+        try {
+            emailService.sendRecoveryEmail(email, token);
+            // Enviar el correo
+            return "Correo de recuperación enviado";
+        } catch (Exception e) {
+            return "Error en el envio del correo de recuperación";
+        }
 
-        return "Correo de recuperación enviado";
     }
 
     @PostMapping("/reset-password")
@@ -85,9 +89,9 @@ public class SecurityController {
         AppUser user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        authService.changePassword(user, newPassword, confirmPassword);
+        authService.resetPassword(user, newPassword, confirmPassword);
 
-        return "Contraseña actualizada exitosamente";
+        return "Contraseña actualizada exitosamente: " + newPassword + " | " + confirmPassword;
     }
 
     // Salir y borrar o inhabilitar token de acceso
