@@ -2,6 +2,7 @@ package com.myfinance.backend.users.controllers;
 
 import com.myfinance.backend.users.entities.security.ApiResponse;
 import com.myfinance.backend.users.entities.security.LoginRequest;
+import com.myfinance.backend.users.entities.security.ResetPasswordRequest;
 import com.myfinance.backend.users.entities.user.AppUser;
 import com.myfinance.backend.users.repositories.UserRepository;
 import com.myfinance.backend.users.services.AuthService;
@@ -76,22 +77,21 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public String resetPassword(@RequestParam String token, @RequestParam String newPassword,
-            @RequestParam String confirmPassword) {
+    public String resetPassword(@RequestBody ResetPasswordRequest request) {
         // Validar el token de recuperación
-        if (!jwtTokenProvider.validateRecoveryToken(token)) {
+        if (!jwtTokenProvider.validateRecoveryToken(request.getToken())) {
             throw new RuntimeException("Token inválido o expirado");
         }
 
         // Obtener el email del token
-        String email = jwtTokenProvider.getUsernameFromToken(token);
+        String email = jwtTokenProvider.getUsernameFromToken(request.getToken());
 
         AppUser user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        authService.resetPassword(user, newPassword, confirmPassword);
+        authService.resetPassword(user, request.getNewPassword(), request.getConfirmPassword());
 
-        return "Contraseña actualizada exitosamente: " + newPassword + " | " + confirmPassword;
+        return "Contraseña actualizada exitosamente";
     }
 
     // Salir y borrar o inhabilitar token de acceso

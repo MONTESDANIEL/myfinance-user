@@ -29,8 +29,8 @@ public class EmailService {
 
     public void sendRecoveryEmail(String toEmail, String token) throws MessagingException, IOException {
 
-        // URL dinámica
-        String recoveryUrl = "http://192.168.1.5:5173";
+        // Generar la URL dinámica incluyendo el token
+        String recoveryUrl = "http://192.168.1.5:5173/reset-password?token=" + token;
 
         // Cargar plantilla HTML
         Resource resource = resourceLoader.getResource("classpath:templates/recovery-email.html");
@@ -41,15 +41,15 @@ public class EmailService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
         // Reemplazar los marcadores con los valores correspondientes
-        content = content.replace("${recoveryUrl}", recoveryUrl); // Reemplazar ${recoveryUrl} con la URL
-        content = content.replace("${userName}", user.getName()); // Reemplazar ${userName} con el nombre del usuario
+        content = content.replace("${recoveryUrl}", recoveryUrl); // Insertar la URL dinámica con el token
+        content = content.replace("${userName}", user.getName()); // Insertar el nombre del usuario
 
         // Configurar el correo
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
         helper.setTo(toEmail);
         helper.setSubject("Recuperación de contraseña");
-        helper.setText(content, true); // Establecer el contenido con HTML
+        helper.setText(content, true); // Establecer el contenido como HTML
 
         // Agregar íconos como adjuntos en línea
         helper.addInline("logoImage", resourceLoader.getResource("classpath:templates/LogoVerde.png"));
