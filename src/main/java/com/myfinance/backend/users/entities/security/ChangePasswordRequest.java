@@ -1,6 +1,7 @@
 package com.myfinance.backend.users.entities.security;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -10,10 +11,14 @@ public class ChangePasswordRequest {
     @NotBlank(message = "La contraseña actual no puede estar vacía.")
     private String currentPassword;
 
-    @NotBlank(message = "La nueva contraseña no puede estar vacía.")
-    @Size(min = 6, message = "La nueva contraseña debe tener al menos 6 caracteres.")
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
+    @Pattern(regexp = ".*[A-Z].*", message = "La contraseña debe contener al menos una letra mayúscula")
+    @Pattern(regexp = ".*[a-z].*", message = "La contraseña debe contener al menos una letra minúscula")
+    @Pattern(regexp = ".*\\d.*", message = "La contraseña debe contener al menos un número")
+    @Pattern(regexp = ".*[!@#$%^&*(),.?\":{}|<>._-].*", message = "La contraseña debe contener al menos un carácter especial")
     private String newPassword;
 
-    @NotBlank(message = "La confirmación de la nueva contraseña no puede estar vacía.")
+    @NotBlank(message = "La contraseña es obligatoria")
     private String confirmPassword;
 }

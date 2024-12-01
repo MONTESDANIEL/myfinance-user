@@ -22,8 +22,8 @@ Este microservicio está encargado de gestionar la autenticación de usuarios y 
   - `id`: Identificación del usuario.
   - `idType` : Tipo de identificacion del usuario.
   - `name`: Nombre del usuario.
-  - `phoneNumber`: Nombre del usuario.
-  - `name`: Nombre del usuario.
+  - `email`: Email del usuario.
+  - `phoneNumber`: Telefono del usuario.
   - `birthDate`: Correo electrónico del usuario.
   - `password`: Contraseña del usuario.
 - **Respuesta**: Mensaje de éxito o error.
@@ -57,13 +57,14 @@ Este microservicio está encargado de gestionar la autenticación de usuarios y 
 #### `PUT /user/update`
 - **Descripción**: Actualiza los datos personales del usuario.
 - **Parametros**:
-  - `id`: Cedula del usuario.
+  - `id`: Identificación del usuario.
+  - `idType` : Tipo de identificacion del usuario.
   - `name`: Nombre del usuario.
-  - `phoneNumber`: Nombre del usuario.
-  - `name`: Nombre del usuario.
+  - `email`: Email del usuario.
+  - `phoneNumber`: Telefono del usuario.
   - `birthDate`: Correo electrónico del usuario.
   - `password`: Contraseña del usuario.
-- **Respuesta**: Actualiza los datos que se pueden actualizar y mensaje de éxito o error.
+- **Respuesta**: Actualiza los datos que se pueden actualizar (name, email, phoneNumber) y mensaje de éxito o error.
 
 #### `PUT /user/update-password`
 - **Descripción**: Actualiza la contraseña del usuario.

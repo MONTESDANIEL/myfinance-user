@@ -137,7 +137,7 @@ public class AuthService {
         // Validar el token de recuperación
         if (token == null) {
             return createApiResponse(HttpStatus.BAD_REQUEST,
-                    "No se envio el token. Por favor, asegúrese de que se ha enviado correctamente.", null);
+                    "No se envio el token. Por favor, asegúrese de que sea enviado correctamente.", null);
         }
 
         // Validar el token de recuperación
@@ -154,7 +154,7 @@ public class AuthService {
         return createApiResponse(HttpStatus.OK, "Logout exitoso.", null);
     }
 
-    private ResponseEntity<ApiResponse<Object>> createApiResponse(HttpStatus status, String message, Object data) {
+    private ResponseEntity<?> createApiResponse(HttpStatus status, String message, Object data) {
         ApiResponse<Object> response = new ApiResponse<>(message, data);
         return ResponseEntity.status(status).body(response);
     }

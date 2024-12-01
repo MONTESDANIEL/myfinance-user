@@ -16,7 +16,7 @@ public class JwtTokenProvider {
 
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256); // Genera una clave segura
                                                                                      // automáticamente
-    private final long validityInMilliseconds = 5 * 60 * 60 * 1000; // 5 horas en milisegundos
+    private final long validityInMilliseconds = 2 * 60 * 60 * 1000; // 2 horas en milisegundos
 
     // Conjunto para almacenar tokens revocados
     private static final Set<String> revokedTokens = new HashSet<>();

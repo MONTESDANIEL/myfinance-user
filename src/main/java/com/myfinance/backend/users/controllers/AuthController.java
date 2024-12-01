@@ -34,13 +34,15 @@ public class AuthController {
         return response;
     }
 
-    // Envia un correo de recuperación de contraseña al correo si existe en la base
+    // Recuperar contraseña: Envia un correo de recuperación de contraseña al correo
+    // si existe en la base
     @GetMapping("/password-recovery")
     public ResponseEntity<?> recoverPassword(@RequestParam String email) {
         ResponseEntity<?> response = authService.recoverPassword(email);
         return response;
     }
 
+    // Restablecer contraseña: Cambio de contraseña con el tokend de la recuperación
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         ResponseEntity<?> response = authService.resetPassword(request);

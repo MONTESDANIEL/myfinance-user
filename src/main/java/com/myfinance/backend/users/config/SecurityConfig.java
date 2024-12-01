@@ -28,8 +28,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para pruebas
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Configuración de CORS
+        http.csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/**").permitAll() // Permitir rutas públicas
                         .anyRequest().authenticated() // Proteger otras rutas
