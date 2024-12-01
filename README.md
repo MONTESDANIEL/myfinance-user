@@ -19,7 +19,8 @@ Este microservicio está encargado de gestionar la autenticación de usuarios y 
 #### `POST /auth/register`
 - **Descripción**: Registra un nuevo usuario.
 - **Parametros**:
-  - `id`: Cedula del usuario.
+  - `id`: Identificación del usuario.
+  - `idType` : Tipo de identificacion del usuario.
   - `name`: Nombre del usuario.
   - `phoneNumber`: Nombre del usuario.
   - `name`: Nombre del usuario.
@@ -107,12 +108,13 @@ Este microservicio está encargado de gestionar la autenticación de usuarios y 
         USE user_service_db;
 
         CREATE TABLE users (
-            id BIGINT NOT NULL PRIMARY KEY,       -- Identificación
-            name VARCHAR(255),                    -- Nombre del usuario
-            email VARCHAR(255),                   -- Correo electrónico
-            phone_number BIGINT,                  -- Número de teléfono
-            birth_date DATE,                      -- Fecha de nacimiento
-            password VARCHAR(255)                 -- Contraseña
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,   -- Campo id, auto incremental
+            id_type VARCHAR(255) NOT NULL,            -- Tipo de ID (por ejemplo, 'CC', 'CE', 'NIT', 'PAS', 'NIE', 'RUT', 'CEX')
+            name VARCHAR(255) NOT NULL,              -- Nombre del usuario
+            email VARCHAR(255) UNIQUE NOT NULL,      -- Correo electrónico único
+            phone_number BIGINT,                    -- Número de teléfono
+            birth_date DATE,                         -- Fecha de nacimiento
+            password VARCHAR(255) NOT NULL           -- Contraseña del usuario
         );
       ```
 

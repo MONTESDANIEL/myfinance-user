@@ -63,11 +63,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Establecer la autenticación en el contexto de seguridad
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception ex) {
-            // Manejo de errores (opcional, puedes registrar el error aquí)
             SecurityContextHolder.clearContext();
         }
 
-        // Continuar con la cadena de filtros
         filterChain.doFilter(request, response);
     }
 }

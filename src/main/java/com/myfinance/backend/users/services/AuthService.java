@@ -1,8 +1,9 @@
 package com.myfinance.backend.users.services;
 
+import com.myfinance.backend.users.entities.security.ApiResponse;
 import com.myfinance.backend.users.entities.security.AppUserDetails;
 import com.myfinance.backend.users.entities.security.LoginRequest;
-import com.myfinance.backend.users.entities.security.PasswordRecovery;
+import com.myfinance.backend.users.entities.security.ResetPasswordRequest;
 import com.myfinance.backend.users.entities.user.AppUser;
 import com.myfinance.backend.users.repositories.UserRepository;
 
@@ -12,8 +13,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -25,19 +28,26 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public String login(LoginRequest loginRequest) {
+    @Autowired
+    private EmailService emailService;
 
-        // Busca al usuario por correo electrónico
-        AppUser user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Correo electrónico no encontrado"));
+    public ResponseEntity<?> login(LoginRequest loginRequest) {
 
-        // Verifica si la contraseña ingresada coincide con la almacenada
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Contraseña incorrecta");
+        Optional<AppUser> userOptional = userRepository.findByEmail(loginRequest.getEmail());
+
+        // Validación de la existencia del usuario
+        if (userOptional.isEmpty()) {
+            return createApiResponse(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas.", null);
         }
 
-        // Crea el objeto AppUserDetails
+        AppUser user = userOptional.get();
+
+        // Validación de la contraseña
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            return createApiResponse(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas.", null);
+        }
+
+        // Crea el objeto AppUserDetails para autenticar al usuario
         AppUserDetails userDetails = new AppUserDetails(user);
 
         // Autentica al usuario manualmente
@@ -48,51 +58,105 @@ public class AuthService {
         // Genera el token JWT
         String jwtToken = jwtTokenProvider.createToken(user.getEmail());
 
-        // Retorna el token JWT
-        return jwtToken;
+        // Respuesta exitosa con el JWT
+        return createApiResponse(HttpStatus.ACCEPTED, "Login exitoso.", jwtToken);
     }
 
-    public boolean register(AppUser appUser) {
+    public ResponseEntity<?> register(AppUser appUser) {
+
+        if (userRepository.findById(appUser.getId()).isPresent()) {
+            return createApiResponse(HttpStatus.CONFLICT, "El usuario ya está registrado.", null);
+        }
+
         if (userRepository.findByEmail(appUser.getEmail()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El correo electrónico ya está registrado");
+            return createApiResponse(HttpStatus.CONFLICT, "El correo electrónico ya está registrado.", null);
+        }
+
+        if (userRepository.findByPhoneNumber(appUser.getPhoneNumber()).isPresent()) {
+            return createApiResponse(HttpStatus.CONFLICT, "El número ya esta registrado.", null);
         }
 
         AppUser user = new AppUser();
         user.setId(appUser.getId());
+        user.setIdType(appUser.getIdType());
         user.setName(appUser.getName());
         user.setEmail(appUser.getEmail());
         user.setPhoneNumber(appUser.getPhoneNumber());
         user.setBirthDate(appUser.getBirthDate());
-
         user.setPassword(passwordEncoder.encode(appUser.getPassword()));
 
         userRepository.save(user);
-        return true;
+        return createApiResponse(HttpStatus.CREATED, "Usuario registrado con exito.", null);
     }
 
-    public boolean recoverPassword(PasswordRecovery recoveryRequest) {
-        return true;
-    }
+    public ResponseEntity<?> recoverPassword(String email) {
 
-    public ResponseEntity<?> resetPassword(AppUser user, String password, String confirmPassword) {
-        // Validar que la nueva contraseña tenga una longitud adecuada
-        if (password.length() < 6) {
-            return ResponseEntity.status(400).body("La nueva contraseña debe tener al menos 6 caracteres.");
+        Optional<AppUser> userOptional = userRepository.findByEmail(email);
+
+        // Validación de la existencia del usuario
+        if (userOptional.isEmpty()) {
+            return createApiResponse(HttpStatus.UNAUTHORIZED, "Correo no registrado.", null);
         }
 
-        // Verificar que la nueva contraseña y la confirmación coinciden
-        if (!password.equals(confirmPassword)) {
-            return ResponseEntity.status(400).body("Las contraseñas no coinciden.");
+        // Generar el token de recuperación
+        String token = jwtTokenProvider.createRecoveryToken(email);
+
+        try {
+            emailService.sendRecoveryEmail(email, token);
+            return createApiResponse(HttpStatus.OK, "Correo de recuperación enviado con éxito.", token);
+        } catch (Exception e) {
+            return createApiResponse(HttpStatus.BAD_REQUEST, "Error al enviar el correo de recuperación.", null);
+        }
+    }
+
+    public ResponseEntity<?> resetPassword(ResetPasswordRequest request) {
+
+        // Validar el token de recuperación
+        if (!jwtTokenProvider.validateRecoveryToken(request.getToken())) {
+            return createApiResponse(HttpStatus.UNAUTHORIZED, "Token inválido o expirado", null);
+        }
+
+        // Extraer usuario del token
+        AppUser user = userRepository
+                .findByEmail(jwtTokenProvider.getUsernameFromToken(request.getToken())).get();
+
+        // Validación de la contraseña
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return createApiResponse(HttpStatus.BAD_REQUEST, "Las contraseñas no coinciden.", null);
         }
 
         // Actualizar la contraseña
-        user.setPassword(passwordEncoder.encode(password));
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        return ResponseEntity.ok("Contraseña actualizada exitosamente.");
+        return createApiResponse(HttpStatus.OK, "La contraseña fue cambiada con exito.", null);
     }
 
-    public void logout() {
+    public ResponseEntity<?> logout(String token) {
+
+        // Validar el token de recuperación
+        if (token == null) {
+            return createApiResponse(HttpStatus.BAD_REQUEST,
+                    "No se envio el token. Por favor, asegúrese de que se ha enviado correctamente.", null);
+        }
+
+        // Validar el token de recuperación
+        if (!jwtTokenProvider.validateToken(token)) {
+            return createApiResponse(HttpStatus.UNAUTHORIZED, "Token inválido o expirado.", null);
+        }
+
+        // Revocar el token, es decir, agregarlo a la lista de tokens revocados
+        jwtTokenProvider.revokeToken(token);
+
         SecurityContextHolder.clearContext();
+
+        // Responder indicando que el logout fue exitoso
+        return createApiResponse(HttpStatus.OK, "Logout exitoso.", null);
     }
+
+    private ResponseEntity<ApiResponse<Object>> createApiResponse(HttpStatus status, String message, Object data) {
+        ApiResponse<Object> response = new ApiResponse<>(message, data);
+        return ResponseEntity.status(status).body(response);
+    }
+
 }
