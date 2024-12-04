@@ -1,6 +1,6 @@
 package com.myfinance.backend.users.entities.user;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -38,7 +38,7 @@ public class AppUser {
 
     @NotNull(message = "La fecha de nacimiento es obligatoria")
     @Column(name = "birth_date")
-    private Date birthDate;
+    private LocalDate birthDate;
 
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")

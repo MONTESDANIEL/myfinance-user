@@ -14,7 +14,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -75,6 +77,12 @@ public class AuthService {
         if (userRepository.findByPhoneNumber(appUser.getPhoneNumber()).isPresent()) {
             return createApiResponse(HttpStatus.CONFLICT, "El número ya esta registrado.", null);
         }
+
+        appUser.setName(Arrays.stream(appUser.getName().split(" "))
+                .map(palabra -> palabra.substring(0, 1).toUpperCase() + palabra.substring(1).toLowerCase())
+                .collect(Collectors.joining(" ")));
+
+        appUser.setEmail(appUser.getEmail().trim().toLowerCase());
 
         AppUser user = new AppUser();
         user.setId(appUser.getId());

@@ -50,7 +50,6 @@ public class UserService {
             }
 
             // Aquí puedes decidir qué campos quieres actualizar. Ejemplo:
-            appUser.setName(user.getName());
             appUser.setEmail(user.getEmail());
             appUser.setPhoneNumber(user.getPhoneNumber());
 
