@@ -112,10 +112,10 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    // Verifica si el usuario está autenticado y si es de tipo AppUserDetails
     public AppUser getAuthenticatedAppUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Verifica si el usuario está autenticado y si es de tipo AppUserDetails
         if (authentication == null || !authentication.isAuthenticated() ||
                 !(authentication.getPrincipal() instanceof AppUserDetails)) {
             AppUser user = new AppUser();
@@ -126,6 +126,7 @@ public class UserService {
         return userDetails.getAppUser();
     }
 
+    // Crea una respuesta segùn el formato
     private ResponseEntity<ApiResponse<Object>> createApiResponse(HttpStatus status, String message, Object data) {
         ApiResponse<Object> response = new ApiResponse<>(message, data);
         return ResponseEntity.status(status).body(response);

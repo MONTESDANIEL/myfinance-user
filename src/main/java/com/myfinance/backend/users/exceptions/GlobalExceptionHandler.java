@@ -29,7 +29,6 @@ public class GlobalExceptionHandler {
                 errors.put(fieldName, new ArrayList<>());
             }
 
-            // Agrega el mensaje de error a la lista
             errors.get(fieldName).add(errorMessage);
         });
 

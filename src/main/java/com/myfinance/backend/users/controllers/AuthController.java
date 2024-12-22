@@ -20,14 +20,12 @@ public class AuthController {
     @Autowired
     private final AuthService authService;
 
-    // Login: Recibe la data en json y devuelve un token
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         ResponseEntity<?> response = authService.login(loginRequest);
         return response;
     }
 
-    // Registro: Recibe los datos del nuevo usuario y lo crea
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody AppUser appUser) {
         ResponseEntity<?> response = authService.register(appUser);
@@ -35,7 +33,6 @@ public class AuthController {
     }
 
     // Recuperar contraseña: Envia un correo de recuperación de contraseña al correo
-    // si existe en la base
     @GetMapping("/password-recovery")
     public ResponseEntity<?> recoverPassword(@RequestParam String email) {
         ResponseEntity<?> response = authService.recoverPassword(email);
@@ -49,7 +46,6 @@ public class AuthController {
         return response;
     }
 
-    // Salir y borrar o inhabilitar token de acceso
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String authorizationHeader) {
         ResponseEntity<?> response = authService.logout(authorizationHeader);

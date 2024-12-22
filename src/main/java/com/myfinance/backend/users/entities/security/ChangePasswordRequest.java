@@ -21,4 +21,5 @@ public class ChangePasswordRequest {
 
     @NotBlank(message = "La contraseña es obligatoria")
     private String confirmPassword;
+
 }

@@ -7,6 +7,7 @@ import lombok.Data;
 
 @Data
 public class ResetPasswordRequest {
+
     private String token;
 
     @NotBlank(message = "La contraseña es obligatoria")
@@ -19,4 +20,5 @@ public class ResetPasswordRequest {
 
     @NotBlank(message = "La contraseña es obligatoria")
     private String confirmPassword;
+
 }

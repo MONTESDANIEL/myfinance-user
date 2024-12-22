@@ -97,6 +97,7 @@ public class AuthService {
         return createApiResponse(HttpStatus.CREATED, "Usuario registrado con exito.", null);
     }
 
+    // Enviar el correo de recuperación
     public ResponseEntity<?> recoverPassword(String email) {
 
         Optional<AppUser> userOptional = userRepository.findByEmail(email);
@@ -117,6 +118,7 @@ public class AuthService {
         }
     }
 
+    // Cambio de la contraseña
     public ResponseEntity<?> resetPassword(ResetPasswordRequest request) {
 
         // Validar el token de recuperación
@@ -140,6 +142,7 @@ public class AuthService {
         return createApiResponse(HttpStatus.OK, "La contraseña fue cambiada con exito.", null);
     }
 
+    // Inhabilitar el token
     public ResponseEntity<?> logout(String token) {
 
         // Validar el token de recuperación
@@ -162,6 +165,7 @@ public class AuthService {
         return createApiResponse(HttpStatus.OK, "Logout exitoso.", null);
     }
 
+    // Metodo para crear una respuesta con formato
     private ResponseEntity<?> createApiResponse(HttpStatus status, String message, Object data) {
         ApiResponse<Object> response = new ApiResponse<>(message, data);
         return ResponseEntity.status(status).body(response);
