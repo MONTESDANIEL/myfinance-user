@@ -1,136 +1,103 @@
-# Microservicio de Autenticación y Gestión de Usuarios
+# 👤 MyFinance User
 
-Este microservicio está encargado de gestionar la autenticación de usuarios y la manipulación de sus datos personales a través de dos controladores principales:
+## 📌 Descripción
 
-1. **Controlador de Autorización**: Maneja el inicio de sesión, registro, recuperación de contraseña, restablecimiento de contraseña, cierre de sesión y la generación y validación de tokens de acceso.
-2. **Controlador de Usuario**: Proporciona acceso y gestión de la información personal del usuario, incluyendo la visualización, actualización y eliminación de la cuenta.
+Este repositorio contiene el **microservicio de usuarios** de **MyFinance**, encargado de gestionar la autenticación, autorización y administración de usuarios en la plataforma.  
+Además de manejar la seguridad mediante **JWT**, permite gestionar perfiles, roles y datos personales de los usuarios.
 
-## Endpoints del Microservicio
+Este microservicio está desarrollado con **Spring Boot**, proporcionando una API REST robusta para gestionar la identidad y seguridad de los usuarios.
 
-### 1. Controlador de Autorización (Authentication Controller)
+---
 
-#### `POST /auth/login`
-- **Descripción**: Inicia sesión de un usuario y devuelve un token de acceso.
-- **Parametros**: 
-  - `email`: Correo electrónico del usuario.
-  - `password`: Contraseña del usuario.
-- **Respuesta**: Token JWT válido para la sesión y mensaje de exito o error.
+## ✨ Características Principales
 
-#### `POST /auth/register`
-- **Descripción**: Registra un nuevo usuario.
-- **Parametros**:
-  - `id`: Identificación del usuario.
-  - `idType` : Tipo de identificacion del usuario.
-  - `name`: Nombre del usuario.
-  - `email`: Email del usuario.
-  - `phoneNumber`: Telefono del usuario.
-  - `birthDate`: Correo electrónico del usuario.
-  - `password`: Contraseña del usuario.
-- **Respuesta**: Mensaje de éxito o error.
+- ✅ **Autenticación con JWT** – Inicio de sesión seguro con tokens.
+- ✅ **Gestión de Usuarios** – Creación, actualización y eliminación de usuarios.
+- ✅ **Perfiles de Usuario** – Manejo de información personal y configuraciones.
+- ✅ **Roles y Permisos** – Control de acceso basado en roles (USER, ADMIN).
+- ✅ **Recuperación de Contraseña** – Proceso de recuperación y restablecimiento seguro.
+- ✅ **Verificación de Email** – Activación de cuenta a través de correo electrónico.
+- ✅ **Protección de Endpoints** – Seguridad en API mediante Spring Security.
 
-#### `POST /auth/password-recovery`
-- **Descripción**: Inicia el proceso de recuperación de contraseña, enviando un enlace de recuperación al correo electrónico del usuario.
-- **Parametros**:
-  - `email`: Correo electrónico del usuario.
-- **Respuesta**: Token JWT válido para la actualización de contraseña y mensaje de éxito o error.
+---
 
-#### `POST /auth/reset-password`
-- **Descripción**: Restablece la contraseña del usuario con el enlace de recuperación enviado previamente.
-- **Parametros**:
-  - `token`: Token de recuperación enviado por correo electrónico.
-  - `newPassword`: Nueva contraseña del usuario.
-  - `confirmPassword`: Confirmación de contraseña del usuario.
-- **Respuesta**: Mensaje de éxito o error.
+## 🛠 Tecnologías Utilizadas
 
-#### `POST /auth/logout`
-- **Descripción**: Cierra la sesión del usuario invalidando el token de acceso.
-- **Parametros**:
-  - `token`: Token de sesión del usuario para desloguear.
-- **Respuesta**: Mensaje de éxito.
+- **Spring Boot** – Framework para el desarrollo del backend.
+- **Spring Security & JWT** – Manejo de autenticación segura.
+- **Spring Data JPA** – Interacción con la base de datos.
+- **MySQL** – Base de datos relacional para almacenamiento.
+- **Docker** – Contenedorización del microservicio.
 
-### 2. Controlador de Usuario (User Controller)
+---
 
-#### `GET /user/profile`
-- **Descripción**: Obtiene la información personal del usuario basado en el token de acceso.
-- **Respuesta**: Datos del usuario (nombre, correo electrónico, fecha de nacimiento, etc.).
+## 🚀 Instalación y Ejecución
 
-#### `PUT /user/update`
-- **Descripción**: Actualiza los datos personales del usuario.
-- **Parametros**:
-  - `id`: Identificación del usuario.
-  - `idType` : Tipo de identificacion del usuario.
-  - `name`: Nombre del usuario.
-  - `email`: Email del usuario.
-  - `phoneNumber`: Telefono del usuario.
-  - `birthDate`: Correo electrónico del usuario.
-  - `password`: Contraseña del usuario.
-- **Respuesta**: Actualiza los datos que se pueden actualizar (name, email, phoneNumber) y mensaje de éxito o error.
+### 📌 Requisitos Previos
 
-#### `PUT /user/update-password`
-- **Descripción**: Actualiza la contraseña del usuario.
-- **Parametros**:
-  - `currentPassword`: Contraseña actual del usuario.
-  - `newPassword`: Nueva contraseña del usuario.
-  - `confirmPassword`: Confirmación de contraseña del usuario.
-- **Respuesta**: Mensaje de éxito o error.
+Antes de comenzar, asegúrate de tener instalado:
 
-#### `DELETE /user/delete`
-- **Descripción**: Elimina la cuenta del usuario.
-- **Respuesta**: Mensaje de éxito o error.
+- **JDK 17 o superior**
+- **Maven**
+- **Docker** (opcional)
+- **Base de datos MySQL**
 
-## Tecnologías Utilizadas
+### 📥 Clonar el Repositorio
 
-- **Spring Boot**: Framework utilizado para construir el microservicio.
-- **JWT (JSON Web Tokens)**: Utilizado para la autenticación y autorización segura.
-- **Spring Security**: Para la gestión de la seguridad, como la protección de rutas y validación de contraseñas.
-- **MySQL**: Base de datos para almacenar la información del usuario.
+```sh
+git clone https://github.com/MONTESDANIEL/myfinance-user.git
+cd myfinance-user
+```
 
-## Cómo Ejecutar el Microservicio
+### 🗃️ Configurar la base de datos
 
-### Prerequisitos
+```sh
+Utilizar el archivo .sql del proyecto para generar la base.
+```
 
-- Java 11 o superior.
-- MySQL Server en ejecución.
+### ⚙️ Configurar el application.properties
 
-### Pasos para Ejecutar
+Ajustar el application.properties de la siguiente forma según la base de datos:
 
-1. **Clonar el repositorio**:
+```sh
+spring.datasource.url=           # Url de acceso a la base de datos.
+spring.datasource.username=      # Usuario de la base de datos
+spring.datasource.password=      # Contraseña de la base de datos
+```
 
-    ```bash
-    git clone https://github.com/tu-usuario/nombre-del-repositorio.git
-    cd nombre-del-repositorio
-    ```
+### 📦 Construir y Ejecutar el Proyecto
 
-2. **Configurar la base de datos**:
-    - Crea una base de datos en MySQL (si aún no tienes una):
-      ```sql
-        CREATE DATABASE user_service_db;
+Para compilar y ejecutar el proyecto:
 
-        USE user_service_db;
+```sh
+mvn clean install
+mvn spring-boot:run
+```
 
-        CREATE TABLE users (
-            id BIGINT AUTO_INCREMENT PRIMARY KEY,   -- Campo id, auto incremental
-            id_type VARCHAR(255) NOT NULL,            -- Tipo de ID (por ejemplo, 'CC', 'CE', 'NIT', 'PAS', 'NIE', 'RUT', 'CEX')
-            name VARCHAR(255) NOT NULL,              -- Nombre del usuario
-            email VARCHAR(255) UNIQUE NOT NULL,      -- Correo electrónico único
-            phone_number BIGINT,                    -- Número de teléfono
-            birth_date DATE,                         -- Fecha de nacimiento
-            password VARCHAR(255) NOT NULL           -- Contraseña del usuario
-        );
-      ```
+---
 
-3. **Configurar las credenciales de la base de datos**:
-    - Actualiza las credenciales en el archivo `application.properties`:
+## 📂 Estructura del Proyecto
 
-      ```properties
-      spring.datasource.url=jdbc:mysql://localhost:3306/user_service_db
-      spring.datasource.username=usuario
-      spring.datasource.password=contraseña
-      ```
+```sh
+myfinance-user/
+│── src/main/java/com/myfinance/backend/user/
+│   ├── config/             # Configuración de autenticación y configuración
+│   ├── controllers/        # Controladores REST
+│   ├── entities/           # Entidades
+│   ├── exceptions/         # Control de excepciones
+│   ├── repositories/       # Acceso a la base de datos
+│   ├── services/           # Lógica de negocio
+│── src/main/java/com/myfinance/backend/user/resources/
+│   ├── application.properties      # Configuración del microservicio
+│── Dockerfile              # Configuración para contenedorización
+│── user_db.sql         # Archivo de creación de la base de datos
+│── README.md               # Documentación del repositorio
+```
 
-4. **Ejecutar la aplicación**:
-    - En el directorio raíz del proyecto, ejecuta el siguiente comando para iniciar el microservicio:
-    
-      ```bash
-      ./mvnw spring-boot:run
-      ```
+## 📜 Licencia
+
+Este proyecto está bajo la licencia MIT, por lo que puedes usarlo y modificarlo libremente.
+
+## ⛓️Relacionado
+
+🔗 Repositorio Principal: [MyFinance](https://github.com/MONTESDANIEL/myfinance)
