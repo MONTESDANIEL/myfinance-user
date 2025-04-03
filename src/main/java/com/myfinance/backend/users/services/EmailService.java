@@ -30,7 +30,7 @@ public class EmailService {
     public void sendRecoveryEmail(String toEmail, String token) throws MessagingException, IOException {
 
         // Generar la URL dinámica incluyendo el token
-        String recoveryUrl = "http://192.168.1.2:5173/reset-password?token=" + token;
+        String recoveryUrl = "http://192.168.1.9:5173/reset-password?token=" + token;
 
         // Cargar plantilla HTML
         Resource resource = resourceLoader.getResource("classpath:templates/recovery-email.html");
